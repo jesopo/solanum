@@ -31,15 +31,6 @@
 #define MAXMODEPARAMS   4
 #define MAXMODEPARAMSSERV 10
 
-#define ITER_COMM_CHANNELS(pos1, pos2, head1, head2, ms1, ms2, chptr) for ((pos1) = (head1), (pos2) = (head2); \
-		(ms1 = pos1 ? pos1->data : NULL, ms2 = pos2 ? pos2->data : NULL, \
-				ms1 == ms2 ? (ms1 != 0) : \
-				ms1 == NULL || ms2 == NULL ? 1 : \
-				irccmp(ms1->chptr->chname, ms2->chptr->chname) ? (ms1 = NULL, 1) : \
-				(ms2 = NULL, 1))\
-			&& (chptr = ms1 ? ms1->chptr : ms2->chptr); \
-		ms1 && (pos1 = pos1->next), ms2 && (pos2 = pos2->next))
-
 #include <setup.h>
 
 struct Client;
@@ -208,6 +199,15 @@ typedef int (*ExtbanFunc)(const char *data, struct Client *client_p,
 #define EXTBAN_INVALID -1  /* invalid mask, false even if negated */
 #define EXTBAN_NOMATCH  0  /* valid mask, no match */
 #define EXTBAN_MATCH    1  /* matches */
+
+int iter_comm_channels_step(rb_dlink_node *pos1, rb_dlink_node *pos2,
+		struct membership **ms1, struct membership **ms2,
+		struct Channel **chptr);
+
+#define ITER_COMM_CHANNELS(pos1, pos2, head1, head2, ms1, ms2, chptr) for ((pos1) = (head1), (pos2) = (head2); \
+		iter_comm_channels_step((pos1), (pos2), &(ms1), &(ms2), &(chptr)); \
+		(ms1) && ((pos1) = (pos1)->next), (ms2) && ((pos2) = (pos2)->next))
+
 
 extern rb_dlink_list global_channel_list;
 void init_channels(void);
