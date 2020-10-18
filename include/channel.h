@@ -31,6 +31,15 @@
 #define MAXMODEPARAMS   4
 #define MAXMODEPARAMSSERV 10
 
+#define ITER_COMM_CHANNELS(pos1, pos2, head1, head2, ms1, ms2, chptr) for ((pos1) = (head1), (pos2) = (head2); \
+		(ms1 = pos1 ? pos1->data : NULL, ms2 = pos2 ? pos2->data : NULL, \
+				ms1 == ms2 ? (ms1 != 0) : \
+				ms1 == NULL || ms2 == NULL ? 1 : \
+				irccmp(ms1->chptr->chname, ms2->chptr->chname) ? (ms1 = NULL, 1) : \
+				(ms2 = NULL, 1))\
+			&& (chptr = ms1 ? ms1->chptr : ms2->chptr); \
+		ms1 && (pos1 = pos1->next), ms2 && (pos2 = pos2->next))
+
 #include <setup.h>
 
 struct Client;
