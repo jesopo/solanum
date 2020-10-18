@@ -172,14 +172,33 @@ names_global(struct Client *source_p)
 		if(dont_show)
 			continue;
 
-		if((cur_len + NICKLEN + 2) > (BUFSIZE - 3))
+		if (IsCapable(source_p, CLICAP_USERHOST_IN_NAMES))
 		{
-			sendto_one(source_p, "%s", buf);
-			cur_len = mlen;
-			t = buf + mlen;
+			/* !@, space */
+			if (cur_len + strlen(target_p->name) + strlen(target_p->username) + strlen(target_p->host) + 3 >= BUFSIZE - 3)
+			{
+				*(t - 1) = '\0';
+				sendto_one(source_p, "%s", buf);
+				cur_len = mlen;
+				t = buf + mlen;
+			}
+
+			tlen = sprintf(t, "%s!%s@%s ", target_p->name, target_p->username, target_p->host);
+		}
+		else
+		{
+			/* space */
+			if(cur_len + strlen(target_p->name) + 1 >= BUFSIZE - 3)
+			{
+				*(t - 1) = '\0';
+				sendto_one(source_p, "%s", buf);
+				cur_len = mlen;
+				t = buf + mlen;
+			}
+
+			tlen = sprintf(t, "%s ", target_p->name);
 		}
 
-		tlen = sprintf(t, "%s ", target_p->name);
 		cur_len += tlen;
 		t += tlen;
 	}
